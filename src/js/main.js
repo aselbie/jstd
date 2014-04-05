@@ -21,8 +21,8 @@ var queue = {
 		};
 	},
 
-	removeEvent: function() {
-		return;
+	removeEvent: function(id) {
+		delete this.events[id];
 	},
 
 	processQueue: function() {
@@ -30,7 +30,7 @@ var queue = {
 		_.each(this.events, function(value, key, list) {
 			if(value.timestamp <= timestamp) {
 				value.e.apply(value.context);
-				delete queue.events[value.id];
+				queue.removeEvent(value.id);
 			}
 		});
 	},

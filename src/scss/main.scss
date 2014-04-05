@@ -7,35 +7,54 @@ $red: #C00;
 
 body {
 	display: flex;
-	align-items: center;
-	justify-content: center;
-	min-height: 100vh;
+	height: 100vh;
+	flex-direction: column;
 }
 
-#grid {
-	position: relative;
-	height: 100vh;
-	max-height: 90vh;
-	width: 100vh;
-	max-width: 90vh;
-	border-top: 1px solid $grey;
-	border-left: 1px solid $grey;
+header {
+	height: 5vh;
+}
 
+.main {
 	display: flex;
-	flex-wrap: wrap;
+	flex-direction: row;
 
-	.cell {
-		width: 2%;
-		height: 2%;
-		border-right: 1px solid $grey;
-		border-bottom: 1px solid $grey;
+	#left {
+		flex-grow: 1;
 	}
 
-	.mover {
-		width: 2%;
-		height: 2%;
-		background-color: $red;
-		position: absolute;
-		transition: all 0.5s ease;
+	#grid {
+		position: relative;
+		height: 90vh;
+		width: 100vh;
+		max-width: 90vh;
+		border-top: 1px solid $grey;
+		border-left: 1px solid $grey;
+
+		display: flex;
+		flex-wrap: wrap;
+
+		.cell {
+			width: 2%;
+			height: 2%;
+			border-right: 1px solid $grey;
+			border-bottom: 1px solid $grey;
+		}
+
+		.mover {
+			width: 2%;
+			height: 2%;
+			background-color: $red;
+			position: absolute;
+			transition: all 0.5s ease;
+		}
 	}
+
+	#right {
+		flex-grow: 1;
+	}
+}
+
+footer {
+	height: 5vh;
 }
