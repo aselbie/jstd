@@ -38,8 +38,8 @@ gulp.task('scripts', function() {
 });
 
 // Default task
-gulp.task('default', ['clean'], function() {
-    gulp.start('styles', 'scripts', 'images');
+gulp.task('default', function() {
+    gulp.start('styles', 'scripts');
 });
 
 // Watch

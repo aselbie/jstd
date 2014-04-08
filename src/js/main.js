@@ -1,3 +1,6 @@
+var stage = new PIXI.Stage(0xFFFFFF, true);
+var renderer = PIXI.autoDetectRenderer(1000, 1000);
+
 function setIntervalWithContext(code,delay,context){
 	return setInterval(function(){
 		code.call(context)
@@ -65,10 +68,34 @@ var grid = {
 	},
 
 	init: function() {
-		this.drawGrid();
-		this.addMover();
-		this.addMover();
-		this.addMover();
+		this.element.appendChild(renderer.view);
+
+		requestAnimFrame( animate );
+
+		var square = new PIXI.Graphics();
+		stage.addChild(square);
+		square.beginFill(0x000000);
+		square.drawRect(0,0,100,100);
+		square.endFill();
+		square.lineWidth = 1;
+		square.lineColor = 'red';
+
+		square.interactive = true;
+
+		console.log(square);
+
+		// stage.addChild(rect);
+
+		function animate() {
+
+			requestAnimFrame( animate );
+
+			// just for fun, lets rotate mr rabbit a little
+			// bunny.rotation += 0.1;
+
+			// render the stage   
+			renderer.render(stage);
+		}
 	},
 
 	addMover: function() {
