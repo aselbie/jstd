@@ -13,6 +13,7 @@ body {
 
 header {
 	height: 5vh;
+	padding: 1em;
 }
 
 .main {
@@ -21,14 +22,14 @@ header {
 
 	#left {
 		flex-grow: 1;
+		padding: 1em;
 	}
 
 	#grid {
 		position: relative;
 		height: 90vh;
-		width: 100vh;
-		max-width: 90vh;
-		border: 1px solid $grey;
+		max-height: 90vw;
+		width: 90vh;
 
 		canvas {
 			width: 100%;
@@ -38,9 +39,11 @@ header {
 
 	#right {
 		flex-grow: 1;
+		padding: 1em;
 	}
 }
 
 footer {
 	height: 5vh;
+	padding: 1em;
 }

@@ -1,13 +1,18 @@
-var stage = new PIXI.Stage(0xFFFFFF, true);
-var renderer = PIXI.autoDetectRenderer(1000, 1000);
-
 function setIntervalWithContext(code,delay,context){
 	return setInterval(function(){
 		code.call(context)
 	},delay) 
 }
 
-var queue = {
+var bunny = PIXI.Texture.fromImage("bunny.png");
+var game = {};
+
+game.WIDTH = 1000;
+game.HEIGHT = 1000;
+game.stage = new PIXI.Stage(0xEFEFEF, true);
+game.renderer = PIXI.autoDetectRenderer(game.WIDTH, game.HEIGHT);
+
+game.actionQueue = {
 	events: {},
 	interval: null,
 	eventCounter: 0,
@@ -33,13 +38,13 @@ var queue = {
 		_.each(this.events, function(value, key, list) {
 			if(value.timestamp <= timestamp) {
 				value.e.apply(value.context);
-				queue.removeEvent(value.id);
+				actionQueue.removeEvent(value.id);
 			}
 		});
 	},
 
 	startQueue: function() {
-		this.interval = setIntervalWithContext(this.processQueue, 33, this);
+		this.interval = setIntervalWithContext(this.processQueue, 100, this);
 	},
 
 	pauseQueue: function() {
@@ -50,104 +55,137 @@ var queue = {
 		this.startQueue();
 	},
 };
-queue.init();
+game.actionQueue.init();
 
-var grid = {
+game.animationQueue = {
+	events: [],
+	lastFrameTS: Date.now(),
+	play: true,
+
+	addEvent: function(event, params, context) {
+		var eventArray = [];
+		eventArray['event'] = event;
+		eventArray['params'] = params;
+		eventArray['context'] = context;
+		this.events.push(eventArray);
+	},
+
+	removeEvent: function(id) {
+		delete this.events[id];
+	},
+
+	processQueue: function() {
+		var thisFrameTS = Date.now();
+		var timeDelta = thisFrameTS - game.animationQueue.lastFrameTS;
+		game.animationQueue.lastFrameTS = thisFrameTS;
+
+		var animate = game.animationQueue.events.shift();
+		if (animate) {
+			animate['params']['timeDelta'] = timeDelta;
+			animate['event'].call(animate['context'], animate['params']);
+		};
+
+		if (game.animationQueue.play) {
+			requestAnimFrame(game.animationQueue.processQueue);
+		}
+		
+		game.renderer.render(game.stage);
+	},
+
+	start: function() {
+		this.play = true;
+		requestAnimFrame(this.processQueue);
+	},
+
+	pause: function() {
+		this.play = false;
+	},
+
+	init: function() {
+		this.start();
+	},
+};
+game.animationQueue.init();
+
+
+game.grid = {
 	element: document.getElementById('grid'),
 	movers: [],
 	moverCounter: 0,
 	width: 50,
 	height: 50,
-
-	drawGrid: function() {
-		for (var i = this.width * this.height; i > 0; i--) {
-			var cell = document.createElement('div');
-			cell.className = 'cell';
-			this.element.appendChild(cell);
-		};
-	},
+	squareWidth: game.WIDTH / this.width,
+	squareHeight: game.HEIGHT / this.height,
 
 	init: function() {
-		this.element.appendChild(renderer.view);
-
-		requestAnimFrame( animate );
-
-		var square = new PIXI.Graphics();
-		stage.addChild(square);
-		square.beginFill(0x000000);
-		square.drawRect(0,0,100,100);
-		square.endFill();
-		square.lineWidth = 1;
-		square.lineColor = 'red';
-
-		square.interactive = true;
-
-		console.log(square);
-
-		// stage.addChild(rect);
-
-		function animate() {
-
-			requestAnimFrame( animate );
-
-			// just for fun, lets rotate mr rabbit a little
-			// bunny.rotation += 0.1;
-
-			// render the stage   
-			renderer.render(stage);
-		}
+		this.element.appendChild(game.renderer.view);
+		this.addMover();
 	},
 
 	addMover: function() {
-		var id = this.moverCounter;
+		var id = game.grid.moverCounter;
 		this.moverCounter++;
 
 		this.movers[id] = {
 			id: id,
-			element: document.createElement('div'),
+			sprite: new PIXI.Sprite(bunny),
 			x: 0,
 			y: 0,
 
-			automate: function() {
-				this.randomMove();
-				queue.addEvent(this.automate, 500, this);
+			moveTo: function(x, y, speed) {
+				var params = [];
+
+				params['startX'] = this.x;
+				params['endX'] = x;
+
+				params['startY'] = this.y;
+				params['endY'] = y;
+
+				params['goalTime'] = Date.now() + speed;
+
+				game.animationQueue.addEvent(this.animateSpriteTo, params, this);
+
+				this.x = x;
+				this.y = y;
 			},
 
-			randomMove: function() {
-				var deltaX = Math.round(Math.random() * 2) - 1;
-				var deltaY = Math.round(Math.random()* 2) - 1;
-				if ((deltaX + this.x) < 0) { deltaX = 0; };
-				if ((deltaX + this.x) >= grid.width) { deltaX = 0; };
-				if ((deltaY + this.y) < 0) { deltaY = 0; };
-				if ((deltaY + this.y) >= grid.width) { deltaY = 0; };
+			animateSpriteTo: function(params) {
+				var remainingTime = params['goalTime'] - Date.now();
+				var xDistanceRemaining = params['endX'] - params['startX'];
+				var yDistanceRemaining = params['endY'] - params['startY'];
 
-				this.move(deltaX,deltaY);
+				var framesToCompletion = Math.round(remainingTime / params['timeDelta']);
+				var xDistancePerFrame = xDistanceRemaining / framesToCompletion;
+				var yDistancePerFrame = yDistanceRemaining / framesToCompletion;
+
+				if (framesToCompletion <= 1) {
+					this.positionSprite(params['endX'], params['endY']);					
+				} else {
+					params['startX'] = params['startX'] + xDistancePerFrame;
+					params['startY'] = params['startY'] + yDistancePerFrame;
+					this.positionSprite(params['startX'], params['startY']);
+					game.animationQueue.addEvent(this.animateSpriteTo, params, this);
+				}
+
 			},
 
-			randomPosition: function() {
-				var initialX = Math.round(Math.random() * grid.width);
-				var initialY = Math.round(Math.random() * grid.height);
-				this.move(initialX,initialY);
-			},
-
-			move: function(deltaX, deltaY) {
-				this.x += deltaX;
-				this.y += deltaY;
-				this.element.style.left = this.x * (100 / grid.width) + '%';
-				this.element.style.top = this.y * (100 / grid.height) + '%';		
+			positionSprite: function(x, y) {
+				this.sprite.position.x = x;
+				this.sprite.position.y = y;
 			},
 
 			init: function() {
-				this.element.className = 'mover';
-				grid.element.appendChild(this.element);
-				this.randomPosition();
-				this.automate();
+				this.sprite.anchor.x = 0.5;
+				this.sprite.anchor.y = 0.5;
+				this.positionSprite(200,200);
+				this.moveTo(800, 800, 5000);
+				this.sprite.setInteractive(true);
+				game.stage.addChild(this.sprite);
 			}
 
 		};
-		grid.movers[id].init();
-		
+		game.grid.movers[id].init();
 	}
 
 };
-grid.init();
+game.grid.init();
