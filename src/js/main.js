@@ -38,7 +38,7 @@ game.actionQueue = {
 		_.each(this.events, function(value, key, list) {
 			if(value.timestamp <= timestamp) {
 				value.e.apply(value.context);
-				actionQueue.removeEvent(value.id);
+				game.actionQueue.removeEvent(value.id);
 			}
 		});
 	},
@@ -132,6 +132,17 @@ game.grid = {
 			x: 0,
 			y: 0,
 
+			automateRandom: function() {
+				this.randomMove();
+				game.actionQueue.addEvent(this.automateRandom, 2000, this);
+			},
+
+			randomMove: function() {
+				var x = Math.random() * 800 + 100;
+				var y = Math.random() * 800 + 100;
+				this.moveTo(x, y, 2000);
+			},
+
 			moveTo: function(x, y, speed) {
 				var params = [];
 
@@ -178,7 +189,7 @@ game.grid = {
 				this.sprite.anchor.x = 0.5;
 				this.sprite.anchor.y = 0.5;
 				this.positionSprite(200,200);
-				this.moveTo(800, 800, 5000);
+				this.automateRandom();
 				this.sprite.setInteractive(true);
 				game.stage.addChild(this.sprite);
 			}
