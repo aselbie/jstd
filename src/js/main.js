@@ -1,202 +1,171 @@
-function setIntervalWithContext(code,delay,context){
-	return setInterval(function(){
-		code.call(context)
-	},delay) 
+var WIDTH = 50;
+var HEIGHT = 50;
+var squareSize = 10;
+
+var stage = new PIXI.Stage(0x666666, true);
+
+// create a renderer instance
+var renderer = PIXI.autoDetectRenderer(WIDTH * squareSize, HEIGHT * squareSize);
+
+// add the renderer view element to the DOM
+document.getElementById('stage').appendChild(renderer.view);
+requestAnimFrame( animate );
+
+// create a texture from an image path
+var bunnyTexture = PIXI.Texture.fromImage("bunny.png");
+var squareTexture = PIXI.Texture.fromImage("square-black.png");
+// var matrix = [
+// 	[0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
+// 	[0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
+// 	[0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
+// 	[0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
+// 	[0,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
+// 	[0,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
+// 	[0,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
+// 	[0,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
+// 	[0,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
+// 	[0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+// 	[0,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
+// 	[0,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
+// 	[0,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
+// 	[0,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
+// 	[0,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
+// 	[0,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
+// 	[0,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
+// 	[0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
+// 	[0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
+// 	[0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
+// 	[0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
+// 	[0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
+// 	[0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
+// 	[0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
+// 	[0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
+// 	[0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
+// 	[0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
+// 	[0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
+// 	[0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
+// 	[0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
+// 	[0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
+// 	[0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
+// 	[0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
+// 	[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
+// 	[0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
+// 	[0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
+// 	[0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
+// 	[0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
+// 	[0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
+// 	[0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
+// 	[0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
+// 	[0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
+// 	[0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
+// 	[0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
+// 	[0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
+// 	[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
+// 	[0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
+// 	[0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
+// 	[0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
+// 	[0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0]
+// ];
+var matrix = [];
+
+// Inititalize matrix of empty squares
+for (var row = 0; row < HEIGHT; row++) {
+	matrix[row] = [];
+	for (var col = 0; col < WIDTH; col++) {
+		matrix[row][col] = 0;
+	};
+};
+for (var row = 1; row < HEIGHT - 1; row++) {
+	for (var col = 1; col < WIDTH - 1; col++) {
+		matrix[row][col] = (Math.random() > 0.65) ? 1 : 0;
+	};
+};
+
+var grid = new PF.Grid(WIDTH, HEIGHT, matrix);
+
+var finder = new PF.AStarFinder({allowDiagonal: false});
+
+function placeSquare(x, y)
+{
+	// create our little square friend..
+	var square = new PIXI.Sprite(squareTexture);
+
+	// center the squares anchor point
+	square.anchor.x = 0.5;
+	square.anchor.y = 0.5;
+
+	// move the sprite to its designated position
+	square.position.x = x * squareSize + squareSize / 2;
+	square.position.y = y * squareSize + squareSize / 2;
+
+	// add it to the stage
+	stage.addChild(square);
 }
 
-var bunny = PIXI.Texture.fromImage("bunny.png");
-var game = {};
+function createBunny(x, y)
+{
+	// create our little bunny friend..
+	var bunny = new PIXI.Sprite(bunnyTexture);
 
-game.WIDTH = 1000;
-game.HEIGHT = 1000;
-game.stage = new PIXI.Stage(0xEFEFEF, true);
-game.renderer = PIXI.autoDetectRenderer(game.WIDTH, game.HEIGHT);
+	// enable the bunny to be interactive.. this will allow it to respond to mouse and touch events
+	bunny.interactive = true;
+	// this button mode will mean the hand cursor appears when you rollover the bunny with your mouse
+	bunny.buttonMode = true;
 
-game.actionQueue = {
-	events: {},
-	interval: null,
-	eventCounter: 0,
+	// center the bunnys anchor point
+	bunny.anchor.x = 0.5;
+	bunny.anchor.y = 0.5;
 
-	addEvent: function(e, delay, context) {
-		var id = this.eventCounter;
-		this.eventCounter++;
+	// move the sprite to its designated position
+	bunny.position.x = x * squareSize + squareSize / 2;
+	bunny.position.y = y * squareSize + squareSize / 2;
 
-		this.events[id] = {
-			id: id,
-			timestamp: Date.now() + delay,
-			e: e,
-			context: context
-		};
-	},
+	bunny.scale.x = bunny.scale.y = 0.25;
 
-	removeEvent: function(id) {
-		delete this.events[id];
-	},
+	// add it to the stage
+	stage.addChild(bunny);
 
-	processQueue: function() {
-		var timestamp = Date.now();
-		_.each(this.events, function(value, key, list) {
-			if(value.timestamp <= timestamp) {
-				value.e.apply(value.context);
-				game.actionQueue.removeEvent(value.id);
-			}
-		});
-	},
+	bunny.path = finder.findPath(x, y, 49, 25, grid.clone());
+	bunny.progress = 0;
 
-	startQueue: function() {
-		this.interval = setIntervalWithContext(this.processQueue, 100, this);
-	},
-
-	pauseQueue: function() {
-		clearInterval(this.interval);
-	},
-
-	init: function() {
-		this.startQueue();
-	},
-};
-game.actionQueue.init();
-
-game.animationQueue = {
-	events: [],
-	lastFrameTS: Date.now(),
-	play: true,
-
-	addEvent: function(event, params, context) {
-		var eventArray = [];
-		eventArray['event'] = event;
-		eventArray['params'] = params;
-		eventArray['context'] = context;
-		this.events.push(eventArray);
-	},
-
-	removeEvent: function(id) {
-		delete this.events[id];
-	},
-
-	processQueue: function() {
-		var thisFrameTS = Date.now();
-		var timeDelta = thisFrameTS - game.animationQueue.lastFrameTS;
-		game.animationQueue.lastFrameTS = thisFrameTS;
-
-		var animate = game.animationQueue.events.shift();
-		if (animate) {
-			animate['params']['timeDelta'] = timeDelta;
-			animate['event'].call(animate['context'], animate['params']);
-		};
-
-		if (game.animationQueue.play) {
-			requestAnimFrame(game.animationQueue.processQueue);
+	bunny.move = function() {
+		bunny.progress++;
+		var coords = bunny.path[bunny.progress];
+		if (coords) {
+			bunny.position.x = coords[0] * squareSize + squareSize / 2;
+			bunny.position.y = coords[1] * squareSize + squareSize / 2;
 		}
-		
-		game.renderer.render(game.stage);
-	},
+	}	
 
-	start: function() {
-		this.play = true;
-		requestAnimFrame(this.processQueue);
-	},
+	bunny.queue = window.setInterval(bunny.move, 100);
 
-	pause: function() {
-		this.play = false;
-	},
+	bunny.mousedown = bunny.touchstart = function(data)
+	{
+		data.originalEvent.preventDefault();
+		window.clearInterval(bunny.queue);
+		stage.removeChild(bunny);
+	};
 
-	init: function() {
-		this.start();
-	},
+	return bunny;
+}
+
+var bunnies = [];
+for (var i = 0; i < 10; i++) {
+	bunnies[i] = createBunny(0, i*5);
 };
-game.animationQueue.init();
 
+console.log(bunnies);
 
-game.grid = {
-	element: document.getElementById('grid'),
-	movers: [],
-	moverCounter: 0,
-	width: 50,
-	height: 50,
-	squareWidth: game.WIDTH / this.width,
-	squareHeight: game.HEIGHT / this.height,
-
-	init: function() {
-		this.element.appendChild(game.renderer.view);
-		this.addMover();
-	},
-
-	addMover: function() {
-		var id = game.grid.moverCounter;
-		this.moverCounter++;
-
-		this.movers[id] = {
-			id: id,
-			sprite: new PIXI.Sprite(bunny),
-			x: 0,
-			y: 0,
-
-			automateRandom: function() {
-				this.randomMove();
-				game.actionQueue.addEvent(this.automateRandom, 2000, this);
-			},
-
-			randomMove: function() {
-				var x = Math.random() * 800 + 100;
-				var y = Math.random() * 800 + 100;
-				this.moveTo(x, y, 2000);
-			},
-
-			moveTo: function(x, y, speed) {
-				var params = [];
-
-				params['startX'] = this.x;
-				params['endX'] = x;
-
-				params['startY'] = this.y;
-				params['endY'] = y;
-
-				params['goalTime'] = Date.now() + speed;
-
-				game.animationQueue.addEvent(this.animateSpriteTo, params, this);
-
-				this.x = x;
-				this.y = y;
-			},
-
-			animateSpriteTo: function(params) {
-				var remainingTime = params['goalTime'] - Date.now();
-				var xDistanceRemaining = params['endX'] - params['startX'];
-				var yDistanceRemaining = params['endY'] - params['startY'];
-
-				var framesToCompletion = Math.round(remainingTime / params['timeDelta']);
-				var xDistancePerFrame = xDistanceRemaining / framesToCompletion;
-				var yDistancePerFrame = yDistanceRemaining / framesToCompletion;
-
-				if (framesToCompletion <= 1) {
-					this.positionSprite(params['endX'], params['endY']);					
-				} else {
-					params['startX'] = params['startX'] + xDistancePerFrame;
-					params['startY'] = params['startY'] + yDistancePerFrame;
-					this.positionSprite(params['startX'], params['startY']);
-					game.animationQueue.addEvent(this.animateSpriteTo, params, this);
-				}
-
-			},
-
-			positionSprite: function(x, y) {
-				this.sprite.position.x = x;
-				this.sprite.position.y = y;
-			},
-
-			init: function() {
-				this.sprite.anchor.x = 0.5;
-				this.sprite.anchor.y = 0.5;
-				this.positionSprite(200,200);
-				this.automateRandom();
-				this.sprite.setInteractive(true);
-				game.stage.addChild(this.sprite);
-			}
-
-		};
-		game.grid.movers[id].init();
-	}
-
+for (var row = 0; row < HEIGHT; row++) {
+	for (var col = 0; col < WIDTH; col++) {
+		if (matrix[row][col] === 1) {
+			placeSquare(col, row);
+		}
+	};
 };
-game.grid.init();
+
+function animate() {
+    requestAnimFrame(animate);
+    renderer.render(stage);
+}
+
