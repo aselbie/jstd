@@ -1,3 +1,5 @@
+@import 'html5-doctor-reset-stylesheet';
+
 * {
 	box-sizing: border-box;
 }
@@ -8,13 +10,7 @@ $red: #C00;
 body {
 	display: flex;
 	height: 100vh;
-	flex-direction: column;
-}
-
-header {
-	height: 5vh;
-	padding: 1em;
-}
+	flex-direction: column;}
 
 .main {
 	display: flex;
@@ -27,9 +23,9 @@ header {
 
 	#stage {
 		position: relative;
-		height: 90vh;
-		max-height: 90vw;
-		width: 90vh;
+		height: 100vh;
+		max-height: 100vw;
+		width: 100vh;
 
 		canvas {
 			width: 100%;
@@ -41,9 +37,4 @@ header {
 		flex-grow: 1;
 		padding: 1em;
 	}
-}
-
-footer {
-	height: 5vh;
-	padding: 1em;
 }
