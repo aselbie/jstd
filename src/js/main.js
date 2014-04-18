@@ -4,6 +4,10 @@ var squareSize = 10;
 
 var stage = new PIXI.Stage(0x666666, true);
 
+stage.interactive = true;
+stage.buttonMode = true;
+stage.defaultCursor = 'none';
+
 // create a renderer instance
 var renderer = PIXI.autoDetectRenderer(WIDTH * squareSize, HEIGHT * squareSize);
 
@@ -13,6 +17,7 @@ document.getElementById('stage').appendChild(renderer.view);
 // create a texture from an image path
 var bunnyTexture = PIXI.Texture.fromImage("bunny.png");
 var squareTexture = PIXI.Texture.fromImage("square-black.png");
+var scopeTexture = PIXI.Texture.fromImage("scope.png");
 // var matrix = [
 // 	[0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
 // 	[0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
@@ -76,12 +81,11 @@ for (var row = 0; row < HEIGHT; row++) {
 };
 for (var row = 1; row < HEIGHT - 1; row++) {
 	for (var col = 1; col < WIDTH - 1; col++) {
-		matrix[row][col] = (Math.random() > 0.65) ? 1 : 0;
+		matrix[row][col] = (Math.random() > 0.7) ? 1 : 0;
 	};
 };
 
 var grid = new PF.Grid(WIDTH, HEIGHT, matrix);
-
 var finder = new PF.AStarFinder({allowDiagonal: false});
 
 function placeSquare(x, y)
@@ -105,11 +109,6 @@ function createBunny(x, y)
 {
 	// create our little bunny friend..
 	var bunny = new PIXI.Sprite(bunnyTexture);
-
-	// enable the bunny to be interactive.. this will allow it to respond to mouse and touch events
-	bunny.interactive = true;
-	// this button mode will mean the hand cursor appears when you rollover the bunny with your mouse
-	bunny.buttonMode = true;
 
 	// center the bunnys anchor point
 	bunny.anchor.x = 0.5;
@@ -142,8 +141,8 @@ function createBunny(x, y)
 				bunny.position.x = x;
 				bunny.position.y = y;
 			} else {
-				bunny.position.x = endX;
-				bunny.position.y = endY;
+				bunny.position.x = bunny.animation.endX;
+				bunny.position.y = bunny.animation.endY;
 			}			
 		}
 	}
@@ -152,41 +151,48 @@ function createBunny(x, y)
 	bunny.path = finder.findPath(x, y, 49, y, grid.clone());
 	bunny.progress = 0;
 
-	bunny.move = function() {
-		bunny.progress++;
-		var coords = bunny.path[bunny.progress];
-		if (coords) {
-			bunny.animation.startX = bunny.position.x;
-			bunny.animation.startY = bunny.position.y;
-			bunny.animation.endX = coords[0] * squareSize + squareSize / 2;
-			bunny.animation.endY = coords[1] * squareSize + squareSize / 2;
-			bunny.animation.startTime = new Date().getTime();
-			bunny.animation.duration = 250;
-		} else {
-			bunny.animation.duration = 0;
-			window.clearInterval(bunny.queue);
+	bunny.NextAction = 0
+	bunny.move = function(now) {
+		if (now > bunny.NextAction) {
+			bunny.NextAction = now + 250;
+			bunny.progress++;
+			var coords = bunny.path[bunny.progress];
+			if (coords) {
+				bunny.animation.startX = bunny.position.x;
+				bunny.animation.startY = bunny.position.y;
+				bunny.animation.endX = coords[0] * squareSize + squareSize / 2;
+				bunny.animation.endY = coords[1] * squareSize + squareSize / 2;
+				bunny.animation.startTime = now;
+				bunny.animation.duration = 250;
+			} else {
+				bunny.animation.duration = 0;
+			}			
 		}
+	}
 
-	}	
+	bunny.testClick = function(x, y, radius) {
+		var dist = Math.sqrt(Math.pow(Math.abs(x - bunny.position.x), 2) + Math.pow(Math.abs(y - bunny.position.y), 2));
+		if (dist <= radius) {
+			bunny.remove();
+		}
+	}
 
-	bunny.queue = window.setInterval(bunny.move, 250);
-
-	// Remove our bunny on click
-	bunny.mousedown = bunny.touchstart = function(data)
-	{
-		data.originalEvent.preventDefault();
-		window.clearInterval(bunny.queue);
+	bunny.remove = function() {
 		stage.removeChild(bunny);
-	};
+		var index = bunnies.indexOf(bunny);
+		delete bunnies[index];
+	}
 
 	return bunny;
 }
 
+// Instatiate our bunnies
 var bunnies = [];
 for (var i = 0; i < 50; i++) {
 	bunnies[i] = createBunny(0, i);
 };
 
+// Draw our terrain to the map
 for (var row = 0; row < HEIGHT; row++) {
 	for (var col = 0; col < WIDTH; col++) {
 		if (matrix[row][col] === 1) {
@@ -195,16 +201,40 @@ for (var row = 0; row < HEIGHT; row++) {
 	};
 };
 
+// Remove our bunny on click
+stage.mousedown = stage.touchstart = function(data)
+{
+	data.originalEvent.preventDefault();
+	var clickOrigin = data.getLocalPosition(stage);
+
+	bunnies.forEach(function(bunny){
+		bunny.testClick(clickOrigin.x, clickOrigin.y, 11);
+	});
+};
+
+var scope = new PIXI.Sprite(scopeTexture);
+scope.anchor.x = 0.5;
+scope.anchor.y = 0.5;
+
+stage.mousemove = stage.touchmove = function(data) {
+	var newPosition = data.getLocalPosition(stage);
+	scope.position.x = newPosition.x;
+	scope.position.y = newPosition.y;
+}
+stage.addChild(scope);
+
+// Our primary loop
 function draw() {
 	requestAnimationFrame(draw);
 	var now = new Date().getTime();
 
-	for (var i = 0; i < bunnies.length; i++) {
-		bunnies[i].animate(now);
-	};
+	bunnies.forEach(function(bunny){
+		bunny.animate(now);
+		bunny.move(now);
+	});
 
 	renderer.render(stage);
 }
 
-requestAnimFrame( draw );
-
+// Kick the whole thing off
+requestAnimFrame(draw);
