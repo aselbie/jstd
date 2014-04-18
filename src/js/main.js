@@ -9,7 +9,6 @@ var renderer = PIXI.autoDetectRenderer(WIDTH * squareSize, HEIGHT * squareSize);
 
 // add the renderer view element to the DOM
 document.getElementById('stage').appendChild(renderer.view);
-requestAnimFrame( animate );
 
 // create a texture from an image path
 var bunnyTexture = PIXI.Texture.fromImage("bunny.png");
@@ -120,25 +119,59 @@ function createBunny(x, y)
 	bunny.position.x = x * squareSize + squareSize / 2;
 	bunny.position.y = y * squareSize + squareSize / 2;
 
-	bunny.scale.x = bunny.scale.y = 0.25;
+	// bunny.scale.x = bunny.scale.y = 0.25;
 
 	// add it to the stage
 	stage.addChild(bunny);
 
-	bunny.path = finder.findPath(x, y, 49, 25, grid.clone());
+	// Setup how our bunny moves between points
+	bunny.animation = {};
+	bunny.animation.startX = bunny.position.x;
+	bunny.animation.startY = bunny.position.y;
+	bunny.animation.endX = bunny.position.x;
+	bunny.animation.endY = bunny.position.y;
+	bunny.animation.startTime = 0;
+	bunny.animation.duration = 0;
+
+	bunny.animate = function(now) {
+		if (bunny.animation.duration > 0) {
+			var t = (now - bunny.animation.startTime) / bunny.animation.duration;
+			if (t > 0) {
+				var x = bunny.animation.startX + t * (bunny.animation.endX - bunny.animation.startX);
+				var y = bunny.animation.startY + t * (bunny.animation.endY - bunny.animation.startY);
+				bunny.position.x = x;
+				bunny.position.y = y;
+			} else {
+				bunny.position.x = endX;
+				bunny.position.y = endY;
+			}			
+		}
+	}
+
+	// Set up path finding and main movements between nodes
+	bunny.path = finder.findPath(x, y, 49, y, grid.clone());
 	bunny.progress = 0;
 
 	bunny.move = function() {
 		bunny.progress++;
 		var coords = bunny.path[bunny.progress];
 		if (coords) {
-			bunny.position.x = coords[0] * squareSize + squareSize / 2;
-			bunny.position.y = coords[1] * squareSize + squareSize / 2;
+			bunny.animation.startX = bunny.position.x;
+			bunny.animation.startY = bunny.position.y;
+			bunny.animation.endX = coords[0] * squareSize + squareSize / 2;
+			bunny.animation.endY = coords[1] * squareSize + squareSize / 2;
+			bunny.animation.startTime = new Date().getTime();
+			bunny.animation.duration = 250;
+		} else {
+			bunny.animation.duration = 0;
+			window.clearInterval(bunny.queue);
 		}
+
 	}	
 
-	bunny.queue = window.setInterval(bunny.move, 100);
+	bunny.queue = window.setInterval(bunny.move, 250);
 
+	// Remove our bunny on click
 	bunny.mousedown = bunny.touchstart = function(data)
 	{
 		data.originalEvent.preventDefault();
@@ -150,11 +183,9 @@ function createBunny(x, y)
 }
 
 var bunnies = [];
-for (var i = 0; i < 10; i++) {
-	bunnies[i] = createBunny(0, i*5);
+for (var i = 0; i < 50; i++) {
+	bunnies[i] = createBunny(0, i);
 };
-
-console.log(bunnies);
 
 for (var row = 0; row < HEIGHT; row++) {
 	for (var col = 0; col < WIDTH; col++) {
@@ -164,8 +195,16 @@ for (var row = 0; row < HEIGHT; row++) {
 	};
 };
 
-function animate() {
-    requestAnimFrame(animate);
-    renderer.render(stage);
+function draw() {
+	requestAnimationFrame(draw);
+	var now = new Date().getTime();
+
+	for (var i = 0; i < bunnies.length; i++) {
+		bunnies[i].animate(now);
+	};
+
+	renderer.render(stage);
 }
+
+requestAnimFrame( draw );
 
