@@ -15,9 +15,9 @@ var renderer = PIXI.autoDetectRenderer(WIDTH * squareSize, HEIGHT * squareSize);
 document.getElementById('stage').appendChild(renderer.view);
 
 // create a texture from an image path
-var bunnyTexture = PIXI.Texture.fromImage("bunny.png");
-var squareTexture = PIXI.Texture.fromImage("square-black.png");
-var scopeTexture = PIXI.Texture.fromImage("scope.png");
+var bunnyTexture = PIXI.Texture.fromImage("img/bunny.png");
+var squareTexture = PIXI.Texture.fromImage("img/square-black.png");
+var scopeTexture = PIXI.Texture.fromImage("img/scope.png");
 // var matrix = [
 // 	[0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
 // 	[0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0],

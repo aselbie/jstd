@@ -17,24 +17,26 @@ gulp.task('styles', function() {
   return gulp.src('src/scss/main.scss')
     .pipe(sass({ style: 'expanded', }))
     .pipe(autoprefixer('last 2 version', 'safari 5', 'ie 8', 'ie 9', 'opera 12.1', 'ios 6', 'android 4'))
-    .pipe(gulp.dest('css'))
+    .pipe(gulp.dest('public/css'))
     .pipe(rename({ suffix: '.min' }))
     .pipe(minifycss())
     .pipe(livereload(server))
-    .pipe(gulp.dest('css'));
+    .pipe(gulp.dest('public/css'));
 });
 
 // Scripts
 gulp.task('scripts', function() {
-  return gulp.src('src/js/**/*.js')
-    // .pipe(jshint('.jshintrc'))
-    // .pipe(jshint.reporter('default'))
+  return gulp.src([
+    'src/js/underscore.js',
+    'src/js/pixi.dev.js',
+    'src/js/pathfinding-browser.js',
+    'src/js/**/*.js'])
     .pipe(concat('main.js'))
-    .pipe(gulp.dest('js'))
+    .pipe(gulp.dest('public/js'))
     .pipe(rename({ suffix: '.min' }))
     .pipe(uglify())
     .pipe(livereload(server))
-    .pipe(gulp.dest('js'));
+    .pipe(gulp.dest('public/js'));
 });
 
 // Default task
