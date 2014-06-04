@@ -6,10 +6,18 @@ var node_static = require('node-static');
 var sockjs_opts = {sockjs_url: "http://cdn.sockjs.org/sockjs-0.3.min.js"};
 
 var sockjs_echo = sockjs.createServer(sockjs_opts);
+
+var connections = [];
 sockjs_echo.on('connection', function(conn) {
+	connections.push(conn);
     conn.on('data', function(message) {
-        conn.write(message);
+    	for (var i = 0; i < connections.length; i++) {
+    		connections[i].write(message);
+    	};
     });
+	conn.on('close', function() {
+		connections.splice(connections.indexOf(conn), 1);
+	});
 });
 
 // 2. Static files server
