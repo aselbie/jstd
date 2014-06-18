@@ -8,13 +8,35 @@
 <body>
 
 <div class="main">
-	<div id="left">Left</div>
+	<div id="left">
+		<h1>Welcome to BunnySlayer</h1>
+
+		<h2>Does this game have a point?</h2>
+		<p>No.</p>
+
+		<h2>Why bunnies?</h2>
+		<p>Because it was the first sprite from the first tutorial I found.</p>
+
+		<h2>What technologies were used to create all this pointlessness?</h2>
+		<ul>
+			<li><a href="https://github.com/GoodBoyDigital/pixi.js">PIXI.js</a> for super-sweet WebGL animations on top of canvas</li>
+			<li><a href="https://github.com/qiao/PathFinding.js">PathFinding.js</a> for super cool A* pathfinding AI. I recommend checking out his <a href="http://qiao.github.io/PathFinding.js/visual/">demo</a> for a very cool demonstration of how this algorithm works.</li>
+			<li>The server stack consists of ngnix, node, forever.js, node-static, and sock.js</li>
+			<li>Everything is concatenated and uglified using Gulp, so you can get to the pointlessness milliseconds faster.</li>
+		</ul>
+
+		<h2>I would like to look at the code</h2>
+		<p>Not actually a question, but you can find it at <a href="https://github.com/aselbie/jstd">https://github.com/aselbie/jstd</a></p>
+
+	</div>
 	<div id="stage"></div>
 	<div id="right">
+		<h2>Chat with Other Players</h2>
 		<div id="first" class="box">
-		<div></div>
-		<form><input autocomplete="off" value="Type here..."></input></form>
-    </div></div>
+			<form><input autocomplete="off" value="Type here..."></input></form>
+			<div></div>
+		</div>
+	</div>
 </div>
 
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
@@ -23,34 +45,30 @@
 
 
 
-    <script>
-        var sockjs_url = '/echo';
-        var sockjs = new SockJS(sockjs_url);
-        $('#first input').focus();
+	<script>
+		var sockjs_url = '/echo';
+		var sockjs = new SockJS(sockjs_url);
+		$('#first input').focus();
 
-        var div  = $('#first div');
-        var inp  = $('#first input');
-        var form = $('#first form');
+		var div  = $('#first div');
+		var inp  = $('#first input');
+		var form = $('#first form');
 
-        var print = function(m, p) {
-            p = (p === undefined) ? '' : JSON.stringify(p);
-            div.append($("<code>").text(m + ' ' + p));
-            div.append($("<br>"));
-            div.scrollTop(div.scrollTop()+10000);
-        };
+		var print = function(m, p) {
+			p = (p === undefined) ? '' : JSON.stringify(p);
+			div.append($("<code>").text(m + ' ' + p));
+			div.append($("<br>"));
+		};
 
-        sockjs.onopen    = function()  {print('[*] open', sockjs.protocol);};
-        sockjs.onmessage = function(e) {print('[.] message', e.data);};
-        sockjs.onclose   = function()  {print('[*] close');};
+		sockjs.onmessage = function(e) {print('[.] message', e.data);};
 
-        form.submit(function() {
-            print('[ ] sending', inp.val());
-            sockjs.send(inp.val());
-            inp.val('');
-            return false;
-        });
+		form.submit(function() {
+			sockjs.send(inp.val());
+			inp.val('');
+			return false;
+		});
 
-    </script>
+	</script>
 	
 </body>
 </html>

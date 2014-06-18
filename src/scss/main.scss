@@ -7,6 +7,30 @@
 $grey: #666;
 $red: #C00;
 
+
+h1 {
+	font-size: 2em;
+	margin-bottom: 1em;
+}
+
+h2 {
+	font-size: 1.25em;
+	margin-bottom: 0.5em;
+}
+
+p {
+	margin-bottom: 1em;
+}
+
+ul {
+	margin-bottom: 1em;
+	padding-left: 1em;
+
+	li {
+		margin-bottom: 0.5em;
+	}
+}
+
 body {
 	display: flex;
 	height: 100vh;
@@ -17,11 +41,12 @@ body {
 	flex-direction: row;
 
 	#left {
-		flex-grow: 1;
+		flex: 1 1 50%;
 		padding: 1em;
 	}
 
 	#stage {
+		flex: 0 0 auto;
 		position: relative;
 		height: 100vh;
 		max-height: 100vw;
@@ -34,7 +59,7 @@ body {
 	}
 
 	#right {
-		flex-grow: 1;
+		flex: 1 1 50%;
 		padding: 1em;
 	}
 }
